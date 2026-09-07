@@ -3,6 +3,7 @@ import {Routes, Route} from "react-router-dom"
 import SignupForm from "./components/Signup"
 import Login from "./components/Login"
 import {ToastContainer} from "react-toastify"
+import VerifyOtp from "./components/verifyotp"
 
 
 const App = ()=> {
@@ -12,6 +13,8 @@ const App = ()=> {
       <Routes>
         <Route path='/' element={<SignupForm/>} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/verify-otp" element={<VerifyOtp/>}  />
+
       </Routes>
 
 
