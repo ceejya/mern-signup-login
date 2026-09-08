@@ -5,9 +5,9 @@ const userschema = new mongoose.Schema({
     email: { type: String, trim: true, unique: true, required: true },
     password: { type: String, trim: true, required: true },
     isVerified:{ type: Boolean, default:false},
-    otp: { type: String },
-    otpExpires: { type: Date }
 })
+
+
 
 const userblurprint = mongoose.model("userinfo", userschema)
 

@@ -1,6 +1,9 @@
 const usermodel = require("../module/user.model")
 const bcryptjs = require("bcryptjs")
-const sendemailVerification  = require("../Utils/emailVerification")
+const sendemailVerification  = require("../Utils/emailVerification");
+const generateOtp = require("../Utils/Otp-generator")
+const otpmodel = require("../module/otp.module");
+const jwt = require("jsonwebtoken")
 
 
 
@@ -17,17 +20,21 @@ const Signup = async (req, res) => {
         const hashedPassword = await bcryptjs.hash(password, 10)
         console.log(hashedPassword);
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString()
-        const otpExpires = Date.now() + 15 * 60 * 1000 // 15 min
+
         const newUser = await usermodel.create({
              ...req.body, 
              password: hashedPassword ,
              isVerified:false,
-             otp,
-             otpExpires
             })
         if (newUser) {
-            const sentmail = await sendemailVerification(email, username, otp)
+            const verificationotp = generateOtp()
+            await otpmodel.create({
+                otp:verificationotp, 
+                email 
+            })
+
+
+            const sentmail = await sendemailVerification(email, username, verificationotp)
             console.log(sentmail);
 
             return res.status(200).json({ message: "Sign up successful", status: true })
@@ -51,32 +58,62 @@ const Signup = async (req, res) => {
 const verifyOtp =  async (req, res)=> {
     try {
         const {otp,  email} = req.body
- 
-        const existuser = await usermodel.findOne({email})
-        if (!existuser) {
-            return res.status(404).json({ message: "user not found", status: false })
+        if (!otp) {
+            return res.status(400).json({message: "All fields are mandatory", status:false})
+            
         }
-
-        if (existuser.otp !== String(otp)) {
-            return res.status(400).json({ message: "Incorrect verification code", status: false })
-        }
-
-        if (existuser.otpExpires < Date.now()) {
-            return res.status(400).json({ message: "Code has expired, please request a new one", status: false })
-        }
-
-        existuser.isVerified = true
-        existuser.otp = undefined
-        await existuser.save()
-
-        return res.status(200).json({ message: "Email verified successfully", status: true })
         
+
+        const existotp = await otpmodel.findOne({otp})
+        console.log(existotp);
+
+
+        if (existotp) {
+            if(existotp.otp !== otp){
+                return res.status(400).json({message: "otp not correct", status:false})
+
+            }
+
+          const verifieduser =  await usermodel.findOneAndUpdate(
+                {email:existotp.email},
+                {isVerified:true},
+                {new:true} 
+            )
+            if (verifieduser) {
+          await otpmodel.findByIdAndDelete(existotp._id)
+         return res.status(200).json({message:"email verified", status:true})
+        }
+            
+        } 
+         
     } catch (error) {
         return res.status(500).json({message: error.message, status: false})
         
     }
 }
 
+
+const Verifytoken = async (req , res) =>{
+ try {
+  const token = req.headers.authorization.split(" ")[1]
+  console.log(token);
+  if (!token) {
+        return res.status(400).json({message:"invalid token", status:false})
+  }
+  const verifiedToken = await jwt.verify(token, process.env.JWT_SECERETKEY)
+  console.log(verifiedToken);
+  if (verifiedToken) {
+    const currentUser = await usermodel.findOne({email:verifiedToken.email}).select("username email _id")
+        return res.status(200).json({message:"token verified", currentUser, status:true})
+  }
+ } catch (error) {
+  console.log(error);
+  if (error.message.includes("buffering timed out")) {
+      return res.status(500).json({message:"Network Error", status:false})
+  }
+    return res.status(500).json({message:error.message, status:false})
+ }
+}
 
 
 
@@ -116,4 +153,4 @@ const Login = async (req, res) => {
         return res.status(500).json({ message: error.message, status: false })
     }
 }
-module.exports = { Signup, Login, verifyOtp }
+module.exports = { Signup, Login, verifyOtp , Verifytoken}
