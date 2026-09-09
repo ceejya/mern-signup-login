@@ -69,10 +69,7 @@ const verifyOtp =  async (req, res)=> {
 
 
         if (existotp) {
-            if(existotp.otp !== otp){
-                return res.status(400).json({message: "otp not correct", status:false})
-
-            }
+         
 
           const verifieduser =  await usermodel.findOneAndUpdate(
                 {email:existotp.email},
@@ -101,10 +98,11 @@ const Verifytoken = async (req , res) =>{
         return res.status(400).json({message:"invalid token", status:false})
   }
   const verifiedToken = await jwt.verify(token, process.env.JWT_SECERETKEY)
-  console.log(verifiedToken);
   if (verifiedToken) {
     const currentUser = await usermodel.findOne({email:verifiedToken.email}).select("username email _id")
-        return res.status(200).json({message:"token verified", currentUser, status:true})
+    console.log(currentUser);
+    
+      return res.status(200).json({message:"token verified", currentUser, status:true})
   }
  } catch (error) {
   console.log(error);
@@ -121,16 +119,17 @@ const Verifytoken = async (req , res) =>{
 const Login = async (req, res) => {
     try {
         console.log(req.body);
-        const { username, password } = req.body
+        const { email, password } = req.body
 
 
-        if (!username || !password) {
+        if (!email || !password) {
             return res.status(400).json({ message: "All fields are mandatory", status: false })
         }
 
-        const existingUser = await usermodel.findOne({ username })
+        const existingUser = await usermodel.findOne({email})
 
         if (!existingUser) {
+
             return res.status(404).json({ message: "user not found", status: false });
         }
        const correctPassword = await bcryptjs.compare(password, existingUser.password)
@@ -143,7 +142,8 @@ const Login = async (req, res) => {
 
 
         }
-        return res.status(200).json({ message: "login successful", status: true });
+     const token = await jwt.sign({email},process.env.JWT_SECERETKEY , {expiresIn:6000})
+        return res.status(200).json({ message: "login successful",token, status: true });
 
     } catch (error) {
         console.log(error);
