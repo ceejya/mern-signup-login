@@ -4,7 +4,7 @@ const sendemailVerification  = require("../Utils/emailVerification");
 const generateOtp = require("../Utils/Otp-generator")
 const otpmodel = require("../module/otp.module");
 const jwt = require("jsonwebtoken")
-
+const cloudinary = require("../Utils/Cloudinary")
 
 
 const Signup = async (req, res) => {
@@ -142,7 +142,7 @@ const Login = async (req, res) => {
 
 
         }
-     const token = await jwt.sign({email},process.env.JWT_SECERETKEY , {expiresIn:6000})
+     const token = await jwt.sign({email},process.env.JWT_SECERETKEY , {expiresIn:60})
         return res.status(200).json({ message: "login successful",token, status: true });
 
     } catch (error) {
@@ -153,4 +153,29 @@ const Login = async (req, res) => {
         return res.status(500).json({ message: error.message, status: false })
     }
 }
+
+// const ProfileUpload = async (req, res)=> {
+//     try {
+//         const {image} = req.body
+//         if (!image) {
+//             return res.status(500).json({ message: "image is empty", status: false})
+            
+//         }
+//      const uploadedimage = await cloudinary.uploader.upload(image)
+//     console.log(uploadedimage);
+    
+
+        
+//     } catch (error) {
+//         console.log(error);
+
+        
+//     }
+// }
+
+
+
+
+
+
 module.exports = { Signup, Login, verifyOtp , Verifytoken}
