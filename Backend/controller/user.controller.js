@@ -9,14 +9,17 @@ const cloudinary = require("../Utils/Cloudinary")
 
 const Signup = async (req, res) => {
 
-
     try {
         console.log(req.body);
         const { username, password, email } = req.body
 
         if (!username || !password || !email) {
-            return res.status(400).json({ message: "All fields are mandatory", status: false })
+
+
+            return res.status(400).json({ message: "All fields are mandatory", status: false  })
+        
         }
+
         const hashedPassword = await bcryptjs.hash(password, 10)
         console.log(hashedPassword);
 
@@ -100,8 +103,7 @@ const Verifytoken = async (req , res) =>{
   const verifiedToken = await jwt.verify(token, process.env.JWT_SECERETKEY)
   if (verifiedToken) {
     const currentUser = await usermodel.findOne({email:verifiedToken.email}).select("username email _id")
-    console.log(currentUser);
-    
+    console.log(currentUser); 
       return res.status(200).json({message:"token verified", currentUser, status:true})
   }
  } catch (error) {
@@ -142,7 +144,7 @@ const Login = async (req, res) => {
 
 
         }
-     const token = await jwt.sign({email},process.env.JWT_SECERETKEY , {expiresIn:60})
+     const token = await jwt.sign({email},process.env.JWT_SECERETKEY , {expiresIn:"2hr"})
         return res.status(200).json({ message: "login successful",token, status: true });
 
     } catch (error) {
@@ -154,28 +156,39 @@ const Login = async (req, res) => {
     }
 }
 
-// const ProfileUpload = async (req, res)=> {
-//     try {
-//         const {image} = req.body
-//         if (!image) {
-//             return res.status(500).json({ message: "image is empty", status: false})
+const ProfileUpload = async (req, res)=> {
+    try {
+        const {image} = req.body
+        if (!image) {
+            return res.status(500).json({ message: "image is empty", status: false})
             
-//         }
-//      const uploadedimage = await cloudinary.uploader.upload(image)
-//     console.log(uploadedimage);
+        }
+     const uploadedimage = await cloudinary.uploader.upload(image)
+    console.log(uploadedimage);
+    const profileUpdate = usermodel.findByIdAndUpdate(
+        {email},
+        {profilepicture:uploadedimage.secure_url},
+        {new:true}
+
+    )
+    if (profileUpdate) {
+        return res.status(200).json({message: "profile picture updated successfully"})
+        
+    }
     
 
         
-//     } catch (error) {
-//         console.log(error);
+    } catch (error) {
+        return res.status(500).json({ message:error.message, status: false})
+        console.log(error);
 
         
-//     }
-// }
+    }
+}
 
 
 
 
 
 
-module.exports = { Signup, Login, verifyOtp , Verifytoken}
+module.exports = { Signup, Login, verifyOtp , Verifytoken,ProfileUpload}

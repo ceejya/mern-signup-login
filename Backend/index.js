@@ -7,7 +7,7 @@ const cors = require("cors")
 
 app.use(cors({origin: "*"}))
 app.use(express.json())
-app.use("/user", userrouter)
+app.use("/user", userrouter) 
 
 const port = 8004
 
@@ -17,6 +17,7 @@ const startServer = async () => {
         app.listen(port, () => {
             console.log(`app started at port ${port}`);
         })
+
     } catch (error) {
         console.error("Server not started because database connection failed.");
         process.exit()
