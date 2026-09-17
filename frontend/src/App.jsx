@@ -5,6 +5,7 @@ import Login from "./components/Login"
 import {ToastContainer} from "react-toastify"
 import VerifyOtp from "./components/verifyotp"
 import Dashboard from "./components/Dashboard"
+import AddProduct from "./components/AddProduct"
 
 
 const App = ()=> {
@@ -16,6 +17,7 @@ const App = ()=> {
         <Route path="/login" element={<Login/>} />
         <Route path="/verify-otp" element={<VerifyOtp/>} />
         <Route path="/Dashboard" element={<Dashboard/>}  />
+        <Route path="/add-product" element={<AddProduct/>}  />
 
       </Routes>
 

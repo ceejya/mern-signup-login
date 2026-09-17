@@ -159,15 +159,28 @@ const Login = async (req, res) => {
 const ProfileUpload = async (req, res)=> {
     try {
         const {image} = req.body
+        const email = req.user 
         if (!image) {
-            return res.status(500).json({ message: "image is empty", status: false})
-            
+            return res.status(500).json({ message: "image is empty", status: false})   
         }
+        
+        const existuser = await usermodel.findOne({email}) 
+        console.log(existuser);
+        const imageid = existuser.profilepicture?.publicId 
+        console.log(imageid, "image public id");
+
+        if(imageid){
+            await cloudinary.uploader.destroy(imageid)
+
+        }
+        
+        
+
      const uploadedimage = await cloudinary.uploader.upload(image)
     console.log(uploadedimage);
     const profileUpdate = usermodel.findByIdAndUpdate(
         {email},
-        {profilepicture:uploadedimage.secure_url},
+        {profilepicture:{imageurl:uploadedimage.secure_url, publicId:uploadedimage.public_id}},
         {new:true}
 
     )

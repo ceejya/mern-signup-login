@@ -8,4 +8,7 @@ const productschema = mongoose.Schema({
     stock:{type:Number, trim:true, required:true, default:0}
 }, {timesamps:true})
 
-module.exports = productschema 
+
+const productModel = mongoose.model("productscollection" ,productschema)
+
+module.exports = productModel
