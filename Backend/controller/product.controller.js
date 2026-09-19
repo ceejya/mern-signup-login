@@ -27,13 +27,21 @@ const addProduct = async (req, res)=>{
 
 }
 
-const getallproduct = async (req, res)=> {
+const getallproduct = async  (req, res)=> {
 
     try {
         const {page, limit} = req.query
-        const skip = Math.ceil((page - 1) * limit)
+        
+        const skip = (parseInt(page)- 1 ) * limit
+        console.log(skip);
+
+        const allproducts = await productmodel.find().skip(skip).limit(limit)
+        console.log(allproducts);
+        
+        
         
     } catch (error) {
+     return res.status(500).json({message: error, status: false})
 
         
     }

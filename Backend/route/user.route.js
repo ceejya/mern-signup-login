@@ -10,7 +10,7 @@ userrouter.post("/signup", Signup)
 userrouter.post("/login", Login)
 userrouter.post("/verifyotp", verifyOtp)
 userrouter.get("/verifytoken", Verifytoken)
-userrouter.patch("/upload", Authverify,  ProfileUpload)
+userrouter.patch("/upload", Authverify, ProfileUpload)
  
       
 module.exports = userrouter
